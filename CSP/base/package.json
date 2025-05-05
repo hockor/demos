@@ -1,0 +1,13 @@
+{
+  "name": "csp-base",
+  "version": "1.0.0",
+  "description": "CSP 基础示例",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
+
