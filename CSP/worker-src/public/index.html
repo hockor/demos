@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSP worker-src 示例 - 受限版</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .demo-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .warning { color: orange; }
+    .nav { margin-bottom: 20px; }
+    .nav a {
+      margin-right: 15px;
+      text-decoration: none;
+      padding: 5px 10px;
+      background-color: #f0f0f0;
+      border-radius: 3px;
+    }
+    #worker-output, #external-worker-output, #blob-worker-output {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 3px;
+      min-height: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="/">受限版 (worker-src 'self')</a>
+    <a href="/no-worker-src">无worker-src限制版</a>
+    <a href="/blocked">完全禁止版 (worker-src 'none')</a>
+  </div>
+
+  <h1>CSP worker-src 指令演示 - 受限版</h1>
+  <p>当前页面应用了以下CSP策略:</p>
+  <code>worker-src 'self'; default-src 'self'; script-src 'self' 'unsafe-inline'</code>
+  <p>这意味着只允许从同源加载Worker脚本</p>
+
+  <div class="demo-box">
+    <h2>Web Workers 测试</h2>
+    
+    <h3>允许的Worker (同源)</h3>
+    <button id="start-worker">启动同源Worker</button>
+    <button id="send-worker-msg">发送消息给Worker</button>
+    <div id="worker-output"></div>
+    
+    <h3>被阻止的Worker (外部域名)</h3>
+    <button id="start-external-worker">尝试启动外部Worker</button>
+    <button id="send-external-msg">发送消息给外部Worker</button>
+    <div id="external-worker-output"></div>
+    
+    <h3>Blob URL Worker测试</h3>
+    <button id="start-blob-worker">启动Blob URL Worker</button>
+    <button id="send-blob-msg">发送消息给Blob Worker</button>
+    <div id="blob-worker-output"></div>
+    
+    <script>
+      $(document).ready(function() {
+        let worker = null;
+        let externalWorker = null;
+        let blobWorker = null;
+        
+        // 同源Worker测试
+        $('#start-worker').click(function() {
+          try {
+            if (worker) {
+              worker.terminate();
+            }
+            worker = new Worker('/worker.js');
+            worker.onmessage = function(e) {
+              $('#worker-output').append('<p class="success">' + e.data + '</p>');
+            };
+            $('#worker-output').html('<p class="success">同源Worker启动成功！</p>');
+          } catch(e) {
+            $('#worker-output').html('<p class="error">Worker创建失败: ' + e.message + '</p>');
+          }
+        });
+        
+        $('#send-worker-msg').click(function() {
+          if (worker) {
+            worker.postMessage('你好，同源Worker！');
+          } else {
+            $('#worker-output').append('<p class="warning">Worker尚未启动</p>');
+          }
+        });
+        
+        // 外部Worker测试
+        $('#start-external-worker').click(function() {
+          try {
+            if (externalWorker) {
+              externalWorker.terminate();
+            }
+            // 尝试加载一个外部域名的Worker，应该会被CSP阻止
+            externalWorker = new Worker('https://example.com/worker.js');
+            externalWorker.onmessage = function(e) {
+              $('#external-worker-output').append('<p>' + e.data + '</p>');
+            };
+            $('#external-worker-output').html('<p class="error">如果你看到这条消息，说明CSP未能阻止外部Worker</p>');
+          } catch(e) {
+            $('#external-worker-output').html('<p class="success">外部Worker被CSP阻止: ' + e.message + '</p>');
+          }
+        });
+        
+        $('#send-external-msg').click(function() {
+          if (externalWorker) {
+            try {
+              externalWorker.postMessage('你好，外部Worker！');
+            } catch(e) {
+              $('#external-worker-output').append('<p class="success">发送消息失败，可能是因为Worker被CSP阻止: ' + e.message + '</p>');
+            }
+          } else {
+            $('#external-worker-output').append('<p class="warning">外部Worker尚未启动或已被阻止</p>');
+          }
+        });
+        
+        // Blob URL Worker测试 
+        $('#start-blob-worker').click(function() {
+          try {
+            if (blobWorker) {
+              blobWorker.terminate();
+            }
+            
+            // 创建一个Worker脚本作为Blob URL
+            const workerCode = `
+              self.onmessage = function(e) {
+                self.postMessage('Blob Worker 收到消息: ' + e.data);
+              };
+            `;
+            
+            const blob = new Blob([workerCode], {type: 'application/javascript'});
+            const blobURL = URL.createObjectURL(blob);
+            
+            blobWorker = new Worker(blobURL);
+            blobWorker.onmessage = function(e) {
+              $('#blob-worker-output').append('<p class="success">' + e.data + '</p>');
+            };
+            
+            $('#blob-worker-output').html('<p class="success">Blob URL Worker启动成功！</p>');
+          } catch(e) {
+            $('#blob-worker-output').html('<p class="error">Blob Worker创建失败: ' + e.message + '</p>');
+          }
+        });
+        
+        $('#send-blob-msg').click(function() {
+          if (blobWorker) {
+            blobWorker.postMessage('你好，Blob Worker！');
+          } else {
+            $('#blob-worker-output').append('<p class="warning">Blob Worker尚未启动</p>');
+          }
+        });
+      });
+    </script>
+  </div>
+
+  <div class="demo-box">
+    <h2>worker-src 注意事项</h2>
+    <p><code>worker-src</code>指令专门用于控制Worker脚本的来源，包括Web Workers、Shared Workers和Service Workers。</p>
+    <p>如果未设置<code>worker-src</code>，浏览器会按以下顺序查找回退策略:</p>
+    <ol>
+      <li><code>child-src</code> (较老的指令，控制iframe和worker)</li>
+      <li><code>script-src</code> (控制脚本来源)</li>
+      <li><code>default-src</code> (默认回退策略)</li>
+    </ol>
+    <p>对于Blob URL Worker，在大多数浏览器中，如果源代码来自同一个源，通常被视为同源，因此在<code>worker-src 'self'</code>策略下允许加载。</p>
+  </div>
+</body>
+</html> 

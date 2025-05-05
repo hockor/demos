@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>script-src 演示</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- 这个脚本来自允许的来源 -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- 本地脚本 -->
+  <script src="script.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>CSP script-src 指令演示</h1>
+    <p>本页面设置了: <code>default-src 'self'; script-src 'self' https://code.jquery.com</code></p>
+    
+    <div class="demo-section">
+      <h2>脚本加载测试</h2>
+      
+      <div class="test-case">
+        <h3>1. jQuery测试（应该成功）</h3>
+        <button id="jquery-test-btn">测试jQuery</button>
+        <div id="jquery-result" class="result">等待执行...</div>
+      </div>
+      
+      <div class="test-case">
+        <h3>2. 内联脚本测试（应该失败）</h3>
+        <button onclick="alert('这个内联脚本应该被阻止')">执行内联脚本</button>
+        <div class="result">查看控制台以检查CSP违规</div>
+      </div>
+      
+      <div class="test-case">
+        <h3>3. 外部不允许的脚本（应该失败）</h3>
+        <button id="load-external-script">加载不允许的外部脚本</button>
+        <div id="external-script-result" class="result">等待执行...</div>
+      </div>
+      
+      <div class="test-case">
+        <h3>4. 动态创建脚本（应该失败）</h3>
+        <button id="create-script-btn">动态创建脚本</button>
+        <div id="dynamic-script-result" class="result">等待执行...</div>
+      </div>
+    </div>
+    
+    <div class="note">
+      <p><strong>注意:</strong> 请查看浏览器控制台，以观察CSP阻止了哪些脚本执行</p>
+    </div>
+  </div>
+</body>
+</html> 

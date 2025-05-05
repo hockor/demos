@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSP Report-URI 演示</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>CSP Report-URI 演示</h1>
+    <p>这个页面展示了 CSP report-uri 指令的工作原理。</p>
+    <p>当 CSP 策略被违反时（例如使用内联脚本），浏览器会向指定的 URI 发送报告。</p>
+    
+    <div id="safeContent">
+        <h2>安全内容区域</h2>
+        <button id="loadSafeScript">加载安全脚本</button>
+        <div id="safeResult"></div>
+    </div>
+    
+    <div id="unsafeContent">
+        <h2>不安全内容区域（违反 CSP）</h2>
+        <button id="triggerInlineScript">触发内联脚本（违反 CSP）</button>
+        <div id="unsafeResult"></div>
+    </div>
+    
+    <!-- 这个是符合 CSP 的外部脚本 -->
+    <script src="safe.js"></script>
+    
+    <!-- 这个内联脚本会违反 CSP 规则并触发报告 -->
+    <script>
+        // 这个内联脚本会违反 CSP 策略，因为我们只允许 'self' 作为 script-src
+        $(document).ready(function() {
+            $('#triggerInlineScript').click(function() {
+                $('#unsafeResult').text('如果你看到这条消息，说明 CSP 未正确实施。检查控制台！');
+            });
+        });
+    </script>
+</body>
+</html> 

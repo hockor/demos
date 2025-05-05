@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>允许任何页面嵌入的内容</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e3f2fd;
+      padding: 20px;
+      border: 2px solid #1565c0;
+      border-radius: 5px;
+      color: #1565c0;
+    }
+    .content {
+      text-align: center;
+      margin: 20px 0;
+    }
+    h2 {
+      margin-top: 0;
+      color: #1565c0;
+    }
+    .warning {
+      color: #ff6f00;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>允许任何页面嵌入的内容</h2>
+  <div class="content">
+    <p>这个页面设置了: <code>frame-ancestors *</code></p>
+    <p>因此它可以被任何页面嵌入，包括未知的第三方网站</p>
+    <p class="warning">注意: 在实际生产环境中，这种设置可能导致安全风险，如点击劫持攻击</p>
+  </div>
+  <p>当前时间: <span id="time"></span></p>
+
+  <script>
+    // 显示当前时间以证明页面是活动的
+    function updateTime() {
+      document.getElementById('time').textContent = new Date().toLocaleTimeString();
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+  </script>
+</body>
+</html> 

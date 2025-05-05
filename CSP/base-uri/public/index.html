@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSP base-uri 示例 - 受限版</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .demo-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .warning { color: orange; }
+    .nav { margin-bottom: 20px; }
+    .nav a {
+      margin-right: 15px;
+      text-decoration: none;
+      padding: 5px 10px;
+      background-color: #f0f0f0;
+      border-radius: 3px;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="/">受限版 (base-uri 'self')</a>
+    <a href="/unrestricted">无限制版</a>
+    <a href="/blocked">完全禁止版 (base-uri 'none')</a>
+  </div>
+
+  <h1>CSP base-uri 指令演示 - 受限版</h1>
+  <p>当前页面应用了以下CSP策略:</p>
+  <code>base-uri 'self'; default-src 'self'; script-src 'self' 'unsafe-inline'</code>
+  <p>这意味着只允许使用指向同源URL的base标签</p>
+
+  <div class="demo-box">
+    <h2>Base 标签测试</h2>
+    
+    <h3>允许的 Base URI (同源)</h3>
+    <button id="add-same-origin-base">添加同源 Base 标签</button>
+    <div id="same-origin-base-result"></div>
+    
+    <h3>被阻止的 Base URI (外部域名)</h3>
+    <button id="add-external-base">尝试添加外部域名 Base 标签</button>
+    <div id="external-base-result"></div>
+
+    <script>
+      $(document).ready(function() {
+        // 添加同源 base 标签
+        $('#add-same-origin-base').click(function() {
+          try {
+            // 先移除可能存在的 base 标签
+            $('base').remove();
+            
+            // 添加指向同源的 base 标签
+            $('head').append('<base href="/base/" />');
+            
+            $('#same-origin-base-result').html(`
+              <p class="success">同源 Base 标签添加成功!</p>
+              <p>当前 Base URI: <code>${document.baseURI}</code></p>
+              <p>相对链接 "images/logo.png" 现在会解析为: <code>${new URL('images/logo.png', document.baseURI).href}</code></p>
+            `);
+          } catch(e) {
+            $('#same-origin-base-result').html('<p class="error">Base 标签添加失败: ' + e.message + '</p>');
+          }
+        });
+        
+        // 尝试添加外部域名 base 标签
+        $('#add-external-base').click(function() {
+          try {
+            // 先移除可能存在的 base 标签
+            $('base').remove();
+            
+            // 尝试添加指向外部域名的 base 标签
+            $('head').append('<base href="https://example.com/" />');
+            
+            // 如果成功执行到这里，说明 CSP 没有阻止
+            $('#external-base-result').html(`
+              <p class="error">外部域名 Base 标签添加成功，CSP 没有阻止它!</p>
+              <p>当前 Base URI: <code>${document.baseURI}</code></p>
+              <p>相对链接 "images/logo.png" 现在会解析为: <code>${new URL('images/logo.png', document.baseURI).href}</code></p>
+            `);
+          } catch(e) {
+            $('#external-base-result').html('<p class="success">外部域名 Base 标签被CSP阻止: ' + e.message + '</p>');
+          }
+        });
+      });
+    </script>
+  </div>
+
+  <div class="demo-box">
+    <h2>base-uri 的安全意义</h2>
+    <p>HTML中的<code>&lt;base&gt;</code>标签可以改变页面上所有相对URL的解析基准。</p>
+    <p>如果攻击者能够注入<code>&lt;base&gt;</code>标签，可能导致:</p>
+    <ul>
+      <li>资源加载被重定向到恶意服务器</li>
+      <li>相对链接被劫持到钓鱼网站</li>
+      <li>JavaScript模块导入路径被修改</li>
+      <li>相对路径的表单提交被重定向</li>
+    </ul>
+    <p>设置<code>base-uri</code>指令可以限制<code>&lt;base&gt;</code>标签的href属性，防止这类攻击。</p>
+  </div>
+
+  <div class="demo-box">
+    <h2>演示原理</h2>
+    <p>在这个页面上:</p>
+    <p>1. CSP设置为: <code>base-uri 'self'</code></p>
+    <p>2. 当尝试添加指向外部域名的base标签时:</p>
+    <pre>&lt;base href="https://example.com/" /&gt;</pre>
+    <p>3. 浏览器会执行CSP策略，阻止该标签生效，并在控制台报告违规</p>
+    <p>4. 但允许添加指向同源的base标签:</p>
+    <pre>&lt;base href="/base/" /&gt;</pre>
+  </div>
+
+  <p>
+    <b>注意:</b> 在浏览器的开发者工具控制台中，你应该能看到被阻止的base标签的CSP违规警告。
+  </p>
+</body>
+</html> 

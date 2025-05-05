@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSP frame-ancestors 示例 - 测试页面</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .demo-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .warning { color: orange; }
+    iframe {
+      border: 1px solid #ddd;
+      width: 100%;
+      height: 200px;
+      margin: 10px 0;
+    }
+    h2 {
+      margin-top: 30px;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>CSP frame-ancestors 指令演示</h1>
+  <p>此页面用于测试不同CSP frame-ancestors设置的页面如何表现。frame-ancestors指令控制哪些网站可以将当前页面嵌入到frame, iframe, object, embed或applet中。</p>
+
+  <div class="demo-box">
+    <h2>测试1: 允许被嵌入的页面</h2>
+    <p>这个iframe嵌入了设置了<code>frame-ancestors 'self' http://localhost:3008</code>的页面，应该能正常显示：</p>
+    <iframe src="/content" title="允许被嵌入的内容"></iframe>
+    <p class="success">✓ 如果你能看到绿色的内容页面，说明嵌入成功，符合预期</p>
+  </div>
+
+  <div class="demo-box">
+    <h2>测试2: 禁止被嵌入的页面</h2>
+    <p>这个iframe嵌入了设置了<code>frame-ancestors 'none'</code>的页面，应该会被阻止显示：</p>
+    <iframe src="/no-embedding" title="禁止被嵌入的内容"></iframe>
+    <p class="warning">! 这个iframe应该是空白的或显示错误，因为CSP阻止了它被嵌入</p>
+  </div>
+
+  <div class="demo-box">
+    <h2>测试3: 允许任何页面嵌入的内容</h2>
+    <p>这个iframe嵌入了设置了<code>frame-ancestors *</code>的页面，应该能正常显示：</p>
+    <iframe src="/allow-all" title="允许任何页面嵌入的内容"></iframe>
+    <p class="success">✓ 如果你能看到绿色的内容页面，说明嵌入成功，符合预期</p>
+  </div>
+
+  <h2>frame-ancestors 指令的说明</h2>
+  <p>frame-ancestors指令定义了哪些源可以嵌入当前页面：</p>
+  <ul>
+    <li><code>frame-ancestors 'none'</code>: 禁止任何网站嵌入该页面</li>
+    <li><code>frame-ancestors 'self'</code>: 只允许同源网站嵌入该页面</li>
+    <li><code>frame-ancestors 'self' example.com</code>: 允许同源网站和example.com嵌入该页面</li>
+    <li><code>frame-ancestors *</code>: 允许任何网站嵌入该页面</li>
+  </ul>
+
+  <div class="demo-box">
+    <h3>frame-ancestors vs X-Frame-Options</h3>
+    <p>frame-ancestors是传统的X-Frame-Options头的现代替代品，提供了更多的灵活性：</p>
+    <table border="1" cellpadding="5" style="border-collapse: collapse; width: 100%;">
+      <tr>
+        <th>CSP frame-ancestors</th>
+        <th>X-Frame-Options 等效</th>
+      </tr>
+      <tr>
+        <td><code>frame-ancestors 'none'</code></td>
+        <td><code>X-Frame-Options: DENY</code></td>
+      </tr>
+      <tr>
+        <td><code>frame-ancestors 'self'</code></td>
+        <td><code>X-Frame-Options: SAMEORIGIN</code></td>
+      </tr>
+      <tr>
+        <td><code>frame-ancestors 'self' example.com</code></td>
+        <td>X-Frame-Options无法实现这种粒度的控制</td>
+      </tr>
+      <tr>
+        <td><code>frame-ancestors *</code></td>
+        <td>相当于不设置X-Frame-Options</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="demo-box">
+    <h3>安全意义</h3>
+    <p>frame-ancestors指令主要用于防止点击劫持攻击(Clickjacking)。点击劫持是一种攻击方式，攻击者将恶意页面嵌入到透明的iframe中覆盖在合法页面上，诱导用户点击看似合法但实际是恶意的元素。</p>
+    <p>通过恰当设置frame-ancestors，可以:</p>
+    <ul>
+      <li>完全防止网站被嵌入到恶意页面中</li>
+      <li>仅允许受信任的合作伙伴网站嵌入你的页面</li>
+      <li>防止用户信息被第三方网站窃取</li>
+    </ul>
+  </div>
+
+  <p>
+    <b>注意:</b> 这个演示中的内容和嵌入页面托管在同一个服务器上，但在实际应用中，frame-ancestors通常用于控制不同域之间的嵌入关系。
+  </p>
+</body>
+</html> 

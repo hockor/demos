@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSP worker-src 示例 - 无限制版</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .demo-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .warning { color: orange; }
+    .nav { margin-bottom: 20px; }
+    .nav a {
+      margin-right: 15px;
+      text-decoration: none;
+      padding: 5px 10px;
+      background-color: #f0f0f0;
+      border-radius: 3px;
+    }
+    #worker-output, #external-worker-output, #blob-worker-output {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 3px;
+      min-height: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="/">受限版 (worker-src 'self')</a>
+    <a href="/no-worker-src">无worker-src限制版</a>
+    <a href="/blocked">完全禁止版 (worker-src 'none')</a>
+  </div>
+
+  <h1>CSP worker-src 指令演示 - 无限制版</h1>
+  <p>当前页面没有设置worker-src指令，使用的CSP策略是:</p>
+  <code>default-src 'self'; script-src 'self' 'unsafe-inline'</code>
+  <p>这意味着Worker加载会回退到其他指令，根据CSP规范，回退顺序是: child-src → script-src → default-src</p>
+  <p>在这种情况下，会回退到script-src值('self')，只允许同源Worker。</p>
+
+  <div class="demo-box">
+    <h2>Web Workers 测试</h2>
+    
+    <h3>同源Worker测试</h3>
+    <button id="start-worker">启动同源Worker</button>
+    <button id="send-worker-msg">发送消息给Worker</button>
+    <div id="worker-output"></div>
+    
+    <h3>外部Worker测试</h3>
+    <button id="start-external-worker">尝试启动外部Worker</button>
+    <button id="send-external-msg">发送消息给外部Worker</button>
+    <div id="external-worker-output"></div>
+    
+    <h3>Blob URL Worker测试</h3>
+    <button id="start-blob-worker">启动Blob URL Worker</button>
+    <button id="send-blob-msg">发送消息给Blob Worker</button>
+    <div id="blob-worker-output"></div>
+    
+    <script>
+      $(document).ready(function() {
+        let worker = null;
+        let externalWorker = null;
+        let blobWorker = null;
+        
+        // 同源Worker测试
+        $('#start-worker').click(function() {
+          try {
+            if (worker) {
+              worker.terminate();
+            }
+            worker = new Worker('/worker.js');
+            worker.onmessage = function(e) {
+              $('#worker-output').append('<p class="success">' + e.data + '</p>');
+            };
+            $('#worker-output').html('<p class="success">同源Worker启动成功！</p>');
+          } catch(e) {
+            $('#worker-output').html('<p class="error">Worker创建失败: ' + e.message + '</p>');
+          }
+        });
+        
+        $('#send-worker-msg').click(function() {
+          if (worker) {
+            worker.postMessage('你好，同源Worker！');
+          } else {
+            $('#worker-output').append('<p class="warning">Worker尚未启动</p>');
+          }
+        });
+        
+        // 外部Worker测试
+        $('#start-external-worker').click(function() {
+          try {
+            if (externalWorker) {
+              externalWorker.terminate();
+            }
+            // 尝试加载一个外部域名的Worker，由于回退到script-src 'self'，应该会被阻止
+            externalWorker = new Worker('https://example.com/worker.js');
+            externalWorker.onmessage = function(e) {
+              $('#external-worker-output').append('<p>' + e.data + '</p>');
+            };
+            $('#external-worker-output').html('<p class="error">如果你看到这条消息，说明CSP回退策略未能阻止外部Worker</p>');
+          } catch(e) {
+            $('#external-worker-output').html('<p class="success">外部Worker被CSP回退策略阻止: ' + e.message + '</p>');
+          }
+        });
+        
+        $('#send-external-msg').click(function() {
+          if (externalWorker) {
+            try {
+              externalWorker.postMessage('你好，外部Worker！');
+            } catch(e) {
+              $('#external-worker-output').append('<p class="success">发送消息失败，可能是因为Worker被CSP阻止: ' + e.message + '</p>');
+            }
+          } else {
+            $('#external-worker-output').append('<p class="warning">外部Worker尚未启动或已被阻止</p>');
+          }
+        });
+        
+        // Blob URL Worker测试 
+        $('#start-blob-worker').click(function() {
+          try {
+            if (blobWorker) {
+              blobWorker.terminate();
+            }
+            
+            // 创建一个Worker脚本作为Blob URL
+            const workerCode = `
+              self.onmessage = function(e) {
+                self.postMessage('Blob Worker 收到消息: ' + e.data);
+              };
+            `;
+            
+            const blob = new Blob([workerCode], {type: 'application/javascript'});
+            const blobURL = URL.createObjectURL(blob);
+            
+            blobWorker = new Worker(blobURL);
+            blobWorker.onmessage = function(e) {
+              $('#blob-worker-output').append('<p class="success">' + e.data + '</p>');
+            };
+            
+            $('#blob-worker-output').html('<p class="success">Blob URL Worker启动成功！这是因为它被视为来自同一源。</p>');
+          } catch(e) {
+            $('#blob-worker-output').html('<p class="error">Blob Worker创建失败: ' + e.message + '</p>');
+          }
+        });
+        
+        $('#send-blob-msg').click(function() {
+          if (blobWorker) {
+            blobWorker.postMessage('你好，Blob Worker！');
+          } else {
+            $('#blob-worker-output').append('<p class="warning">Blob Worker尚未启动</p>');
+          }
+        });
+      });
+    </script>
+  </div>
+
+  <div class="demo-box">
+    <h2>关于CSP回退策略的说明</h2>
+    <p>在没有设置<code>worker-src</code>的情况下，根据CSP规范，浏览器会按照以下顺序查找回退策略:</p>
+    <ol>
+      <li>首先查看是否设置了<code>child-src</code> (本例中未设置)</li>
+      <li>然后查看<code>script-src</code> (设置为'self')</li>
+      <li>最后查看<code>default-src</code> (设置为'self')</li>
+    </ol>
+    <p>因此，在这个页面上，Worker加载会受到<code>script-src 'self'</code>的限制，行为与显式设置<code>worker-src 'self'</code>非常相似。</p>
+    <p>这是一个重要的安全原则：即使没有明确配置某个指令，CSP也会通过回退机制提供一定程度的保护。</p>
+  </div>
+</body>
+</html> 

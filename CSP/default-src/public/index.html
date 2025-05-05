@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>default-src 演示</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="script.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>CSP default-src 指令演示</h1>
+    <p>本页面设置了: <code>default-src 'self'</code></p>
+    
+    <div class="demo-section">
+      <h2>外部资源加载测试</h2>
+      <div class="test-case">
+        <h3>内部JS（应该成功）</h3>
+        <button id="internal-js-btn">执行内部JS</button>
+        <div id="internal-js-result" class="result">等待执行...</div>
+      </div>
+      
+      <div class="test-case">
+        <h3>外部jQuery（应该失败）</h3>
+        <button id="jquery-test-btn">测试jQuery</button>
+        <div id="jquery-result" class="result">等待执行...</div>
+      </div>
+      
+      <div class="test-case">
+        <h3>外部图片（应该失败）</h3>
+        <img src="https://via.placeholder.com/150" alt="外部图片" id="external-img">
+        <div class="result">查看控制台以检查CSP违规</div>
+      </div>
+    </div>
+    
+    <div class="note">
+      <p><strong>注意:</strong> 请查看浏览器控制台，以观察CSP阻止了哪些资源加载</p>
+    </div>
+  </div>
+</body>
+</html> 

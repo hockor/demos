@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>img-src 演示</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>CSP img-src 指令演示</h1>
+    <p>本页面设置了: <code>default-src 'self'; img-src 'self' https://via.placeholder.com</code></p>
+    
+    <div class="demo-section">
+      <h2>图片加载测试</h2>
+      
+      <div class="test-case">
+        <h3>1. 本地图片（应该成功）</h3>
+        <img src="local-image.jpg" alt="本地图片" class="demo-img" id="local-img">
+        <div class="result" id="local-img-result">等待加载结果...</div>
+      </div>
+      
+      <div class="test-case">
+        <h3>2. 允许的外部图片（应该成功）</h3>
+        <img src="https://via.placeholder.com/300x150?text=允许的外部图片" alt="允许的外部图片" class="demo-img" id="allowed-external-img">
+        <div class="result" id="allowed-external-img-result">等待加载结果...</div>
+      </div>
+      
+      <div class="test-case">
+        <h3>3. 不允许的外部图片（应该失败）</h3>
+        <img src="https://picsum.photos/300/150" alt="不允许的外部图片" class="demo-img" id="blocked-external-img">
+        <div class="result" id="blocked-external-img-result">等待加载结果...</div>
+      </div>
+      
+      <div class="test-case">
+        <h3>4. CSS背景图片（应该成功/失败取决于来源）</h3>
+        <div class="bg-image-local" id="local-bg-img">本地CSS背景图片（应该成功）</div>
+        <div class="result" id="local-bg-img-result">等待加载结果...</div>
+        
+        <div class="bg-image-external" id="external-bg-img">外部CSS背景图片（应该失败）</div>
+        <div class="result" id="external-bg-img-result">等待加载结果...</div>
+      </div>
+      
+      <div class="test-case">
+        <h3>5. JavaScript动态添加的图片（遵循相同规则）</h3>
+        <div id="dynamic-img-container">
+          <button id="add-allowed-img-btn">添加允许域的图片</button>
+          <button id="add-blocked-img-btn">添加不允许域的图片</button>
+        </div>
+        <div class="result" id="dynamic-img-result">点击上方按钮测试...</div>
+      </div>
+
+      <div class="test-case">
+        <h3>6. SVG内联图片（应该受img-src规则影响）</h3>
+        <svg width="100" height="100" id="inline-svg">
+          <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow" />
+        </svg>
+        <div class="result" id="svg-result">内联SVG应该显示，因为它不需要加载外部资源</div>
+      </div>
+    </div>
+    
+    <div class="note">
+      <p><strong>注意:</strong> 请查看浏览器控制台，以观察CSP阻止了哪些图片加载</p>
+    </div>
+  </div>
+</body>
+</html> 

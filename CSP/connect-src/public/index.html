@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>connect-src 演示</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>CSP connect-src 指令演示</h1>
+    <p>本页面设置了: <code>default-src 'self'; connect-src 'self' https://jsonplaceholder.typicode.com; script-src 'self' 'unsafe-inline'</code></p>
+    
+    <div class="demo-section">
+      <h2>网络请求测试</h2>
+      
+      <div class="test-case">
+        <h3>1. 同域Fetch请求（应该成功）</h3>
+        <button id="same-origin-fetch-btn">发送同域Fetch请求</button>
+        <div class="result" id="same-origin-fetch-result">等待发送请求...</div>
+      </div>
+      
+      <div class="test-case">
+        <h3>2. 允许的跨域Fetch请求（应该成功）</h3>
+        <button id="allowed-fetch-btn">发送允许的跨域Fetch请求</button>
+        <div class="result" id="allowed-fetch-result">等待发送请求...</div>
+      </div>
+      
+      <div class="test-case">
+        <h3>3. 不允许的跨域Fetch请求（应该失败）</h3>
+        <button id="blocked-fetch-btn">发送不允许的跨域Fetch请求</button>
+        <div class="result" id="blocked-fetch-result">等待发送请求...</div>
+      </div>
+      
+      <div class="test-case">
+        <h3>4. XMLHttpRequest测试（遵循相同规则）</h3>
+        <button id="xhr-allowed-btn">发送允许的XHR请求</button>
+        <button id="xhr-blocked-btn">发送不允许的XHR请求</button>
+        <div class="result" id="xhr-result">等待发送请求...</div>
+      </div>
+      
+      <div class="test-case">
+        <h3>5. WebSocket测试（应该失败）</h3>
+        <button id="websocket-btn">尝试WebSocket连接</button>
+        <div class="result" id="websocket-result">等待连接...</div>
+      </div>
+      
+      <div class="test-case">
+        <h3>6. Beacon API测试</h3>
+        <button id="beacon-allowed-btn">发送允许的Beacon请求</button>
+        <button id="beacon-blocked-btn">发送不允许的Beacon请求</button>
+        <div class="result" id="beacon-result">等待发送请求...</div>
+      </div>
+    </div>
+    
+    <div class="note">
+      <p><strong>注意:</strong> 请查看浏览器控制台，以观察CSP阻止了哪些网络请求</p>
+    </div>
+  </div>
+</body>
+</html> 

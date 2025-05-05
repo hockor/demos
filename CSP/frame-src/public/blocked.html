@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSP frame-src 示例 - 完全禁止版</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .demo-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .warning { color: orange; }
+    .nav { margin-bottom: 20px; }
+    .nav a {
+      margin-right: 15px;
+      text-decoration: none;
+      padding: 5px 10px;
+      background-color: #f0f0f0;
+      border-radius: 3px;
+    }
+    iframe {
+      border: 1px solid #ddd;
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="/">受限版 (允许YouTube)</a>
+    <a href="/unrestricted">无限制版</a>
+    <a href="/blocked">完全禁止版</a>
+  </div>
+
+  <h1>CSP frame-src 演示 - 完全禁止版</h1>
+  <p>当前页面应用了严格的禁止所有iframe的CSP策略:</p>
+  <code>frame-src 'none'; default-src 'self'; script-src 'self' 'unsafe-inline'</code>
+  <p>这意味着所有iframe，无论来源如何，都将被阻止。</p>
+  
+  <div class="demo-box">
+    <h2>YouTube嵌入 (将被阻止)</h2>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <p class="error">这个YouTube嵌入应该被CSP阻止，不会显示。</p>
+  </div>
+  
+  <div class="demo-box">
+    <h2>同源iframe (将被阻止)</h2>
+    <iframe src="/" width="560" height="200"></iframe>
+    <p class="error">即使是指向本站的iframe也会被阻止。</p>
+  </div>
+
+  <div class="demo-box">
+    <h2>动态添加iframe</h2>
+    <button id="add-youtube">尝试添加YouTube iframe</button>
+    <button id="add-self">尝试添加同源iframe</button>
+    <div id="dynamic-frame-container"></div>
+    
+    <script>
+      $(document).ready(function() {
+        $('#add-youtube').click(function() {
+          const frameHTML = '<iframe width="560" height="200" src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe>';
+          $('#dynamic-frame-container').html(frameHTML);
+          $('#dynamic-frame-container').append('<p class="error">动态添加的YouTube iframe应该被CSP阻止。</p>');
+        });
+        
+        $('#add-self').click(function() {
+          const frameHTML = '<iframe width="560" height="200" src="/"></iframe>';
+          $('#dynamic-frame-container').html(frameHTML);
+          $('#dynamic-frame-container').append('<p class="error">动态添加的同源iframe也应该被CSP阻止。</p>');
+        });
+      });
+    </script>
+  </div>
+
+  <p>
+    <b>注意:</b> 在浏览器的开发者工具控制台中，你应该能看到所有iframe的CSP违规警告。
+  </p>
+</body>
+</html> 

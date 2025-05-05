@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSP child-src 示例</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .demo-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .warning { color: orange; }
+    iframe {
+      border: 1px solid #ddd;
+      max-width: 100%;
+    }
+    #worker-output, #external-worker-output {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 3px;
+      min-height: 40px;
+    }
+  </style>
+</head>
+<body>
+  <h1>CSP child-src 指令演示</h1>
+  <p>当前页面应用了以下CSP策略:</p>
+  <code>child-src 'self' https://www.youtube.com https://youtube.com; default-src 'self'; script-src 'self' 'unsafe-inline'</code>
+
+  <div class="demo-box">
+    <h2>iframe 加载 (受 child-src 控制)</h2>
+    
+    <h3>允许的 iframe - YouTube</h3>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <p class="success">这个YouTube嵌入应该能正常显示，因为CSP的child-src允许来自youtube.com的iframe。</p>
+    
+    <h3>被阻止的 iframe - 非许可来源</h3>
+    <iframe src="https://example.com" width="560" height="200"></iframe>
+    <p class="error">这个来自example.com的iframe应该被CSP阻止。</p>
+  </div>
+
+  <div class="demo-box">
+    <h2>Web Workers 示例 (也受 child-src 控制)</h2>
+    
+    <h3>允许的 Worker (同源)</h3>
+    <button id="start-worker">启动同源 Worker</button>
+    <button id="send-worker-msg">发送消息到 Worker</button>
+    <div id="worker-output"></div>
+    
+    <h3>被阻止的 Worker (外部域名)</h3>
+    <button id="start-external-worker">尝试启动外部 Worker</button>
+    <button id="send-external-msg">发送消息到外部 Worker</button>
+    <div id="external-worker-output"></div>
+    
+    <script>
+      $(document).ready(function() {
+        let worker = null;
+        let externalWorker = null;
+        
+        // 同源Worker测试
+        $('#start-worker').click(function() {
+          try {
+            if (worker) {
+              worker.terminate();
+            }
+            worker = new Worker('/worker.js');
+            worker.onmessage = function(e) {
+              $('#worker-output').append('<p class="success">' + e.data + '</p>');
+            };
+            $('#worker-output').html('<p class="success">同源Worker启动成功！</p>');
+          } catch(e) {
+            $('#worker-output').html('<p class="error">Worker创建失败: ' + e.message + '</p>');
+          }
+        });
+        
+        $('#send-worker-msg').click(function() {
+          if (worker) {
+            worker.postMessage('你好，Worker！');
+          } else {
+            $('#worker-output').append('<p class="warning">Worker尚未启动</p>');
+          }
+        });
+        
+        // 外部Worker测试
+        $('#start-external-worker').click(function() {
+          try {
+            if (externalWorker) {
+              externalWorker.terminate();
+            }
+            // 这里尝试加载一个外部域名的Worker，应该会被CSP阻止
+            // 为了演示，我们使用https://example.com/worker.js作为URL
+            // 注意：在实际环境中，这个URL并不存在
+            externalWorker = new Worker('https://example.com/worker.js');
+            externalWorker.onmessage = function(e) {
+              $('#external-worker-output').append('<p>' + e.data + '</p>');
+            };
+            $('#external-worker-output').html('<p class="error">如果你看到这条消息，说明CSP未能阻止外部Worker</p>');
+          } catch(e) {
+            $('#external-worker-output').html('<p class="success">外部Worker被CSP阻止: ' + e.message + '</p>');
+          }
+        });
+        
+        $('#send-external-msg').click(function() {
+          if (externalWorker) {
+            try {
+              externalWorker.postMessage('你好，外部Worker！');
+            } catch(e) {
+              $('#external-worker-output').append('<p class="success">发送消息失败，可能是因为Worker被CSP阻止: ' + e.message + '</p>');
+            }
+          } else {
+            $('#external-worker-output').append('<p class="warning">外部Worker尚未启动或已被阻止</p>');
+          }
+        });
+      });
+    </script>
+  </div>
+
+  <div class="demo-box">
+    <h2>child-src vs worker-src</h2>
+    <p>在较新的CSP规范中，对于Web Workers的控制推荐使用<code>worker-src</code>指令，而<code>child-src</code>主要用于控制nested browsing contexts (如iframe)。</p>
+    <p>如果没有设置<code>worker-src</code>，浏览器会回退到<code>child-src</code>来控制Worker的来源。如果child-src也没设置，则会回退到<code>script-src</code>，最后才是<code>default-src</code>。</p>
+  </div>
+
+  <p>
+    <b>注意:</b> 在浏览器的开发者工具控制台中，你应该能看到被阻止的iframe和Worker的CSP违规警告。
+  </p>
+</body>
+</html> 

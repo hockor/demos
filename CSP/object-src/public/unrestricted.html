@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSP object-src 示例 - 无限制版</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .demo-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .warning { color: orange; }
+    .nav { margin-bottom: 20px; }
+    .nav a {
+      margin-right: 15px;
+      text-decoration: none;
+      padding: 5px 10px;
+      background-color: #f0f0f0;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="/">限制版 (object-src 'none')</a>
+    <a href="/unrestricted">无限制版</a>
+  </div>
+
+  <h1>CSP object-src 演示 - 无限制版</h1>
+  <p>当前页面没有应用 object-src 限制，使用的CSP策略是:</p>
+  <code>default-src 'self'; script-src 'self' 'unsafe-inline'</code>
+  
+  <div class="demo-box">
+    <h2>Flash 对象示例</h2>
+    <p>下面将尝试加载一个Flash对象 (由于Flash已经被现代浏览器废弃，这个示例可能不起作用，但CSP不会阻止它):</p>
+    
+    <object data="https://example.com/flash-demo.swf" type="application/x-shockwave-flash" width="400" height="300">
+      <param name="movie" value="https://example.com/flash-demo.swf">
+      <param name="quality" value="high">
+      <div class="warning">
+        如果你能看到这条消息，可能是因为你的浏览器不支持Flash或示例Flash文件不存在，但CSP没有阻止&lt;object&gt;标签的加载。
+      </div>
+    </object>
+  </div>
+  
+  <div class="demo-box">
+    <h2>Embed 标签示例</h2>
+    <p>下面将尝试嵌入一个PDF文件 (由于文件不存在，实际上不会显示，但CSP不会阻止嵌入尝试):</p>
+    
+    <embed src="https://example.com/document.pdf" width="500" height="300" type="application/pdf">
+    <p class="warning">如果无法显示PDF，可能是因为文件不存在，但CSP并没有阻止&lt;embed&gt;标签。</p>
+  </div>
+
+  <div class="demo-box">
+    <h2>动态添加对象</h2>
+    <button id="add-object">尝试动态添加&lt;object&gt;标签</button>
+    <div id="dynamic-object-container"></div>
+    
+    <script>
+      $(document).ready(function() {
+        $('#add-object').click(function() {
+          const objectHTML = '<object data="https://example.com/sample.swf" type="application/x-shockwave-flash" width="400" height="200"></object>';
+          $('#dynamic-object-container').html(objectHTML);
+          $('#dynamic-object-container').append('<p class="success">CSP没有阻止动态添加的&lt;object&gt;标签，但由于Flash已被废弃或文件不存在，可能无法正常显示。</p>');
+        });
+      });
+    </script>
+  </div>
+
+  <p>
+    <b>注意:</b> 在这个页面中，你应该不会在浏览器控制台中看到关于&lt;object&gt;或&lt;embed&gt;标签的CSP违规警告。
+  </p>
+</body>
+</html> 

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSP frame-src 示例 - 无限制版</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .demo-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .warning { color: orange; }
+    .nav { margin-bottom: 20px; }
+    .nav a {
+      margin-right: 15px;
+      text-decoration: none;
+      padding: 5px 10px;
+      background-color: #f0f0f0;
+      border-radius: 3px;
+    }
+    iframe {
+      border: 1px solid #ddd;
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="/">受限版 (允许YouTube)</a>
+    <a href="/unrestricted">无限制版</a>
+    <a href="/blocked">完全禁止版</a>
+  </div>
+
+  <h1>CSP frame-src 演示 - 无限制版</h1>
+  <p>当前页面没有应用特定的frame-src限制，使用的CSP策略是:</p>
+  <code>default-src 'self'; script-src 'self' 'unsafe-inline'</code>
+  <p>由于没有特别指定frame-src，将使用default-src的值('self')作为默认值，但浏览器可能根据不同实现而有所不同。</p>
+  
+  <div class="demo-box">
+    <h2>YouTube嵌入</h2>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <p class="warning">在没有明确的frame-src限制下，YouTube嵌入的行为可能取决于浏览器如何解释default-src策略。</p>
+  </div>
+  
+  <div class="demo-box">
+    <h2>其他网站嵌入</h2>
+    <iframe src="https://example.com" width="560" height="200"></iframe>
+    <p class="warning">在没有明确的frame-src限制下，此iframe的行为可能取决于浏览器如何解释default-src策略。</p>
+  </div>
+
+  <div class="demo-box">
+    <h2>动态添加iframe</h2>
+    <button id="add-youtube">添加YouTube iframe</button>
+    <button id="add-example">添加Example.com iframe</button>
+    <div id="dynamic-frame-container"></div>
+    
+    <script>
+      $(document).ready(function() {
+        $('#add-youtube').click(function() {
+          const frameHTML = '<iframe width="560" height="200" src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe>';
+          $('#dynamic-frame-container').html(frameHTML);
+          $('#dynamic-frame-container').append('<p class="warning">动态添加的YouTube iframe在没有明确的frame-src限制下的行为。</p>');
+        });
+        
+        $('#add-example').click(function() {
+          const frameHTML = '<iframe width="560" height="200" src="https://example.com"></iframe>';
+          $('#dynamic-frame-container').html(frameHTML);
+          $('#dynamic-frame-container').append('<p class="warning">动态添加的example.com iframe在没有明确的frame-src限制下的行为。</p>');
+        });
+      });
+    </script>
+  </div>
+
+  <p>
+    <b>注意:</b> 在大多数现代浏览器中，由于没有明确的frame-src指令，默认会回退到default-src指令('self')，这意味着只有同源的iframe才允许加载。
+  </p>
+</body>
+</html> 

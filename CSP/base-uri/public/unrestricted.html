@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSP base-uri 示例 - 无限制版</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .demo-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .warning { color: orange; }
+    .nav { margin-bottom: 20px; }
+    .nav a {
+      margin-right: 15px;
+      text-decoration: none;
+      padding: 5px 10px;
+      background-color: #f0f0f0;
+      border-radius: 3px;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="/">受限版 (base-uri 'self')</a>
+    <a href="/unrestricted">无限制版</a>
+    <a href="/blocked">完全禁止版 (base-uri 'none')</a>
+  </div>
+
+  <h1>CSP base-uri 指令演示 - 无限制版</h1>
+  <p>当前页面没有设置base-uri指令，使用的CSP策略是:</p>
+  <code>default-src 'self'; script-src 'self' 'unsafe-inline'</code>
+  <p>这意味着没有对base标签的限制，可以指向任何URL。</p>
+
+  <div class="demo-box">
+    <h2>Base 标签测试</h2>
+    
+    <h3>同源 Base URI</h3>
+    <button id="add-same-origin-base">添加同源 Base 标签</button>
+    <div id="same-origin-base-result"></div>
+    
+    <h3>外部域名 Base URI</h3>
+    <button id="add-external-base">添加外部域名 Base 标签</button>
+    <div id="external-base-result"></div>
+
+    <script>
+      $(document).ready(function() {
+        // 添加同源 base 标签
+        $('#add-same-origin-base').click(function() {
+          try {
+            // 先移除可能存在的 base 标签
+            $('base').remove();
+            
+            // 添加指向同源的 base 标签
+            $('head').append('<base href="/base/" />');
+            
+            $('#same-origin-base-result').html(`
+              <p class="success">同源 Base 标签添加成功!</p>
+              <p>当前 Base URI: <code>${document.baseURI}</code></p>
+              <p>相对链接 "images/logo.png" 现在会解析为: <code>${new URL('images/logo.png', document.baseURI).href}</code></p>
+            `);
+          } catch(e) {
+            $('#same-origin-base-result').html('<p class="error">Base 标签添加失败: ' + e.message + '</p>');
+          }
+        });
+        
+        // 添加外部域名 base 标签
+        $('#add-external-base').click(function() {
+          try {
+            // 先移除可能存在的 base 标签
+            $('base').remove();
+            
+            // 添加指向外部域名的 base 标签
+            $('head').append('<base href="https://example.com/" />');
+            
+            $('#external-base-result').html(`
+              <p class="success">外部域名 Base 标签添加成功!</p>
+              <p>当前 Base URI: <code>${document.baseURI}</code></p>
+              <p>相对链接 "images/logo.png" 现在会解析为: <code>${new URL('images/logo.png', document.baseURI).href}</code></p>
+            `);
+          } catch(e) {
+            $('#external-base-result').html('<p class="error">Base 标签添加失败: ' + e.message + '</p>');
+          }
+        });
+      });
+    </script>
+  </div>
+
+  <div class="demo-box">
+    <h2>安全风险</h2>
+    <p>这个页面没有设置<code>base-uri</code>限制，存在以下安全风险:</p>
+    <ul>
+      <li>如果有XSS漏洞，攻击者可以注入base标签</li>
+      <li>可以改变所有相对URL的解析基准，包括:</li>
+      <ul>
+        <li>脚本、样式表和图片的加载路径</li>
+        <li>链接跳转目标</li>
+        <li>表单提交目标</li>
+        <li>Ajax请求的相对URL</li>
+      </ul>
+      <li>导致资源加载被重定向到恶意服务器</li>
+      <li>可能导致用户数据被发送到攻击者控制的服务器</li>
+    </ul>
+  </div>
+
+  <div class="demo-box">
+    <h2>最佳安全实践</h2>
+    <p>为了防止base标签被滥用，应该在CSP中设置base-uri限制:</p>
+    <ul>
+      <li><code>base-uri 'self'</code> - 只允许指向同源URL的base标签</li>
+      <li><code>base-uri 'none'</code> - 完全禁止使用base标签</li>
+      <li>或明确列出允许的域名，如 <code>base-uri 'self' https://trusted-cdn.com</code></li>
+    </ul>
+  </div>
+
+  <p>
+    <b>注意:</b> 这个页面故意不设置base-uri限制以演示对比效果。在实际应用中应避免这种配置。
+  </p>
+</body>
+</html> 

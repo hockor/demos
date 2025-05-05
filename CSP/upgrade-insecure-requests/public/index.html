@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSP Upgrade-Insecure-Requests 演示</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .demo-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .controls {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .status {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .status.enabled {
+            color: green;
+        }
+        .status.disabled {
+            color: red;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>CSP Upgrade-Insecure-Requests 演示</h1>
+    
+    <div class="controls">
+        <h3>CSP 状态</h3>
+        <div id="cspStatus"></div>
+        <a href="?csp=on" class="btn" id="enableCSP">启用 upgrade-insecure-requests</a> | 
+        <a href="?csp=off" class="btn" id="disableCSP">禁用 upgrade-insecure-requests</a>
+    </div>
+    
+    <div class="demo-section">
+        <h2>HTTP 图片资源</h2>
+        <p>这个图片使用 HTTP URL 加载：</p>
+        <img src="http://placehold.co/400x200?text=测试图片" alt="HTTP测试图片" id="testImage">
+        <div id="imageStatus"></div>
+    </div>
+    
+    <div class="demo-section">
+        <h2>HTTP 脚本资源</h2>
+        <p>这个脚本使用 HTTP URL 加载：</p>
+        <pre>http://code.jquery.com/jquery-1.12.4.min.js</pre>
+        <div id="scriptStatus"></div>
+    </div>
+    
+    <div class="demo-section">
+        <h2>网络请求</h2>
+        <p>当 upgrade-insecure-requests 启用时，以下网络请求将自动从 HTTP 升级到 HTTPS：</p>
+        <button id="makeRequest">发起 HTTP 请求</button>
+        <div id="requestResult"></div>
+    </div>
+    
+    <div class="demo-section">
+        <h2>运行结果</h2>
+        <table id="resultsTable">
+            <tr>
+                <th>资源类型</th>
+                <th>原始 URL</th>
+                <th>实际加载 URL</th>
+                <th>状态</th>
+            </tr>
+            <tr id="imageRow">
+                <td>图片</td>
+                <td>http://placehold.co/400x200</td>
+                <td id="actualImageUrl">-</td>
+                <td id="imageLoadStatus">-</td>
+            </tr>
+            <tr id="scriptRow">
+                <td>脚本</td>
+                <td>http://code.jquery.com/jquery-1.12.4.min.js</td>
+                <td id="actualScriptUrl">-</td>
+                <td id="scriptLoadStatus">-</td>
+            </tr>
+            <tr id="requestRow">
+                <td>Ajax 请求</td>
+                <td>http://api.jqueryui.com/resources/demos.css</td>
+                <td id="actualRequestUrl">-</td>
+                <td id="requestStatus">-</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="demo-section">
+        <h2>关于 upgrade-insecure-requests</h2>
+        <p>这个 CSP 指令会指示浏览器将所有 HTTP URL 自动升级到 HTTPS。</p>
+        <p>适用场景：</p>
+        <ul>
+            <li>有大量遗留 HTTP 资源的网站迁移</li>
+            <li>不需要完全重写所有 URL 的方式实现全站 HTTPS</li>
+            <li>第三方资源自动升级（仅当第三方支持 HTTPS）</li>
+        </ul>
+    </div>
+    
+    <!-- 这个脚本会加载一个 HTTP 资源 -->
+    <script src="script.js"></script>
+    
+    <!-- 加载备用的 HTTP 脚本，用于测试 -->
+    <script src="http://code.jquery.com/jquery-1.12.4.min.js"></script>
+</body>
+</html> 

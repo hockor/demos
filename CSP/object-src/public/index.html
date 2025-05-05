@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSP object-src 示例 - 限制版</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .demo-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .warning { color: orange; }
+    .nav { margin-bottom: 20px; }
+    .nav a {
+      margin-right: 15px;
+      text-decoration: none;
+      padding: 5px 10px;
+      background-color: #f0f0f0;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="/">限制版 (object-src 'none')</a>
+    <a href="/unrestricted">无限制版</a>
+  </div>
+
+  <h1>CSP object-src 演示 - 限制版</h1>
+  <p>当前页面应用了以下CSP策略:</p>
+  <code>object-src 'none'; default-src 'self'; script-src 'self' 'unsafe-inline'</code>
+  
+  <div class="demo-box">
+    <h2>Flash 对象示例</h2>
+    <p>下面将尝试加载一个Flash对象，但由于CSP限制，它会被阻止:</p>
+    
+    <object data="https://example.com/flash-demo.swf" type="application/x-shockwave-flash" width="400" height="300">
+      <param name="movie" value="https://example.com/flash-demo.swf">
+      <param name="quality" value="high">
+      <div class="error">
+        如果你能看到这条消息，说明&lt;object&gt;标签被CSP策略阻止了，这是预期的行为。
+      </div>
+    </object>
+  </div>
+  
+  <div class="demo-box">
+    <h2>Embed 标签示例</h2>
+    <p>下面将尝试嵌入一个PDF文件，但由于CSP限制，它会被阻止:</p>
+    
+    <embed src="https://example.com/document.pdf" width="500" height="300" type="application/pdf">
+    <p class="warning">如果上面没有显示PDF，这说明CSP成功阻止了&lt;embed&gt;标签。</p>
+  </div>
+
+  <div class="demo-box">
+    <h2>动态添加对象</h2>
+    <button id="add-object">尝试动态添加&lt;object&gt;标签</button>
+    <div id="dynamic-object-container"></div>
+    
+    <script>
+      $(document).ready(function() {
+        $('#add-object').click(function() {
+          const objectHTML = '<object data="https://example.com/sample.swf" type="application/x-shockwave-flash" width="400" height="200"></object>';
+          $('#dynamic-object-container').html(objectHTML);
+          $('#dynamic-object-container').append('<p class="error">如果没有显示对象，说明CSP成功阻止了动态添加的&lt;object&gt;标签。</p>');
+        });
+      });
+    </script>
+  </div>
+
+  <p>
+    <b>注意:</b> 在浏览器的开发者工具控制台中，你应该能看到CSP违规的警告消息。
+  </p>
+</body>
+</html> 

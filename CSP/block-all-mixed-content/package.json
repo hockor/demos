@@ -1,0 +1,13 @@
+{
+  "name": "csp-block-all-mixed-content-demo",
+  "version": "1.0.0",
+  "description": "演示CSP block-all-mixed-content指令的使用",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "generate-cert": "mkdir -p keys && openssl req -x509 -newkey rsa:2048 -keyout keys/key.pem -out keys/cert.pem -days 365 -nodes -subj '/CN=localhost'"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+} 

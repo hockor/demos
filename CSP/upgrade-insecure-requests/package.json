@@ -1,0 +1,12 @@
+{
+  "name": "csp-upgrade-insecure-requests-demo",
+  "version": "1.0.0",
+  "description": "演示CSP upgrade-insecure-requests指令的使用",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+} 

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSP Block-All-Mixed-Content 演示</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .demo-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .controls {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .status {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .status.enabled {
+            color: green;
+        }
+        .status.disabled {
+            color: red;
+        }
+        .resource {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .resource-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .blocked {
+            background-color: #ffdddd;
+            color: #d00;
+        }
+        .loaded {
+            background-color: #ddffdd;
+            color: #080;
+        }
+        .pending {
+            background-color: #ffffdd;
+            color: #880;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .warning {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 15px 0;
+        }
+    </style>
+    <!-- 尝试加载 HTTP 样式 -->
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+</head>
+<body>
+    <h1>CSP Block-All-Mixed-Content 演示</h1>
+    
+    <div class="warning">
+        <h3>⚠️ 注意</h3>
+        <p>此页面通过 HTTPS 加载，但尝试加载多个 HTTP 资源（混合内容）。</p>
+        <p>通过 <code>block-all-mixed-content</code> 指令，所有的混合内容都会被阻止加载。</p>
+    </div>
+    
+    <div class="controls">
+        <h3>CSP 状态</h3>
+        <div id="cspStatus"></div>
+        <a href="?csp=on" class="btn" id="enableCSP">启用 block-all-mixed-content</a> | 
+        <a href="?csp=off" class="btn" id="disableCSP">禁用 block-all-mixed-content</a>
+    </div>
+    
+    <div class="demo-section">
+        <h2>混合内容资源演示</h2>
+        
+        <div class="resource">
+            <h3>HTTP 图片 <span id="imageStatus" class="resource-status pending">待加载</span></h3>
+            <div>
+                <img src="http://placehold.co/400x200?text=HTTP图片" alt="HTTP测试图片" id="testImage" width="400" height="200">
+            </div>
+        </div>
+        
+        <div class="resource">
+            <h3>HTTP 样式 <span id="cssStatus" class="resource-status pending">待验证</span></h3>
+            <p>页面尝试从 <code>http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css</code> 加载样式</p>
+            <div class="ui-widget" id="cssTest">
+                <div class="ui-state-default ui-corner-all" style="padding: 10px;">
+                    如果此元素有样式，说明 HTTP CSS 被加载了
+                </div>
+            </div>
+        </div>
+        
+        <div class="resource">
+            <h3>HTTP JavaScript <span id="scriptStatus" class="resource-status pending">待加载</span></h3>
+            <p>尝试从 <code>http://code.jquery.com/ui/1.12.1/jquery-ui.min.js</code> 加载脚本</p>
+            <button id="dialogButton">点击打开 jQuery UI 对话框</button>
+            <div id="dialogResult"></div>
+        </div>
+        
+        <div class="resource">
+            <h3>HTTP XHR/Fetch 请求 <span id="xhrStatus" class="resource-status pending">待测试</span></h3>
+            <button id="makeRequest">发送 HTTP 请求</button>
+            <div id="requestResult"></div>
+        </div>
+    </div>
+    
+    <div class="demo-section">
+        <h2>测试结果</h2>
+        <table>
+            <tr>
+                <th>资源类型</th>
+                <th>URL</th>
+                <th>状态</th>
+                <th>备注</th>
+            </tr>
+            <tr>
+                <td>图片</td>
+                <td>http://placehold.co/400x200</td>
+                <td id="imageResultStatus">-</td>
+                <td id="imageResultNote">-</td>
+            </tr>
+            <tr>
+                <td>CSS</td>
+                <td>http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css</td>
+                <td id="cssResultStatus">-</td>
+                <td id="cssResultNote">-</td>
+            </tr>
+            <tr>
+                <td>JavaScript</td>
+                <td>http://code.jquery.com/ui/1.12.1/jquery-ui.min.js</td>
+                <td id="scriptResultStatus">-</td>
+                <td id="scriptResultNote">-</td>
+            </tr>
+            <tr>
+                <td>XHR/Fetch</td>
+                <td>http://api.jquery.com/resources/events.json</td>
+                <td id="xhrResultStatus">-</td>
+                <td id="xhrResultNote">-</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="demo-section">
+        <h2>关于 block-all-mixed-content</h2>
+        <p>这个 CSP 指令会阻止所有混合内容（HTTP 资源在 HTTPS 页面中）的加载。</p>
+        <p>主要特点：</p>
+        <ul>
+            <li>阻止所有 HTTP 资源，无需在各个指令中单独指定</li>
+            <li>提供了比浏览器默认混合内容阻止更严格的保护</li>
+            <li>可以与其他 CSP 指令一起使用，进一步加强安全性</li>
+        </ul>
+    </div>
+    
+    <!-- 加载 HTTP 脚本 -->
+    <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    
+    <!-- 本地脚本处理测试和展示结果 -->
+    <script src="script.js"></script>
+</body>
+</html> 
