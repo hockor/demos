@@ -19,22 +19,18 @@ app.use((req, res, next) => {
     // - 默认资源加载来源为 'self'（即同源）
     // - 脚本允许从 'self' 和 cdnjs.cloudflare.com 加载
     // - 样式表允许从 'self' 加载，并允许内联样式（'unsafe-inline'），仅用于演示，生产环境应避免使用
-    // - 图片资源允许从 'self' 和 https://via.placeholder.com 加载
+    // - 图片资源允许从 'self' 和 https://placehold.co 加载
     // - 所有违反策略的行为将报告到 /report 接口
     const cspPolicy = `
         default-src 'self';
-        script-src 'self' https://cdnjs.cloudflare.com;
+        script-src 'self' https://cdnjs.cloudflare.com 'sha256-WnZRYRws9lJmeyKcnwV8cR+ycNmLoVQQPANm6GNlsUk=';
         style-src 'self' 'unsafe-inline';
-        img-src 'self' https://via.placeholder.com;
+        img-src 'self' https://placehold.co;
         report-uri /report;
     `.replace(/\s+/g, ' ').trim(); // 清理多余的空白字符
 
     // 使用 Content-Security-Policy 响应头来 **强制执行** 策略
     res.setHeader('Content-Security-Policy', cspPolicy);
-
-    // 或者使用下面这一行来 **仅报告** 违规行为而不阻止资源加载
-    // res.setHeader('Content-Security-Policy-Report-Only', cspPolicy);
-
     next();
 });
 

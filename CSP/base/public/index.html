@@ -15,15 +15,14 @@
     <!-- 内联脚本：如果 script-src 不包含 'unsafe-inline'，此脚本将被阻止执行 -->
     <script>
         console.log('这是一个内联脚本。');
-        // 如果 script-src 中未启用 'unsafe-inline'，这个脚本将被阻止。
     </script>
+    <script>console.log('这是一个由 hash 判断的脚本。');</script>
 
     <!-- 来自同源的外部脚本：CSP 允许加载 /safe-script.js -->
     <script src="/safe-script.js"></script>
 
     <!-- 来自 cdnjs.cloudflare.com 的外部脚本：CSP 允许加载该域名下的资源 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
 </head>
 <body>
     <h1>内容安全策略（CSP）演示页面</h1>
@@ -32,22 +31,7 @@
     <!-- 内联事件处理函数：这会触发 CSP 违规（如果未允许 'unsafe-inline'） -->
     <button onclick="alert('这是一个内联事件处理函数！')">点击我（内联事件）</button>
 
-    <!-- 图片资源：来自 via.placeholder.com，CSP 已允许该来源 -->
-    <img src="https://via.placeholder.com/150" alt="占位图片">
-
-    <p>
-        <button id="dynamic-script-btn">动态加载脚本</button>
-    </p>
-
-    <!-- 动态创建并插入一个脚本标签 -->
-    <script>
-        document.getElementById('dynamic-script-btn').addEventListener('click', () => {
-            const script = document.createElement('script');
-            script.src = '/unsafe-script.js'; // 根据 CSP 策略，该脚本可能被阻止加载
-            document.body.appendChild(script);
-            console.log('尝试加载动态脚本。');
-        });
-    </script>
-
+    <!-- 图片资源：来自 placehold.co，CSP 已允许该来源 -->
+    <img src="https://placehold.co/150x150" alt="占位图片">
 </body>
 </html>
