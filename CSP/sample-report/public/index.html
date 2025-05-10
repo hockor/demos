@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSP 报告收集演示</title>
+    <style nonce="{{nonce}}">
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #3498db;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+        }
+        .violation {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        .reports-container {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>CSP 报告收集演示</h1>
+    <p>这个页面展示了如何收集和查看 CSP 违规报告。</p>
+    
+    <div class="section">
+        <h2>安全内容 (符合 CSP)</h2>
+        <button id="loadSafeScript">加载安全脚本</button>
+        <button id="loadSafeStyle">应用安全样式</button>
+        <div id="safeResult" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>不安全内容 (违反 CSP)</h2>
+        <button id="inlineScript">执行内联脚本</button>
+        <button id="inlineStyle">应用内联样式</button>
+        <button id="externalScript">加载外部脚本</button>
+        <div id="unsafeResult" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>查看收集到的报告</h2>
+        <button id="loadReports">加载报告列表</button>
+        <div id="reportsContainer" class="reports-container"></div>
+    </div>
+    
+    <!-- 安全脚本 - 使用 nonce -->
+    <script nonce="{{nonce}}">
+        document.addEventListener('DOMContentLoaded', function() {
+            // 安全操作
+            document.getElementById('loadSafeScript').addEventListener('click', function() {
+                document.getElementById('safeResult').textContent = '安全脚本已执行 - 使用了正确的 nonce 值';
+            });
+            
+            document.getElementById('loadSafeStyle').addEventListener('click', function() {
+                const safeResult = document.getElementById('safeResult');
+                safeResult.style.backgroundColor = '#d4edda';
+                safeResult.style.borderLeft = '4px solid #28a745';
+                safeResult.textContent = '安全样式已应用 - 使用了正确的 nonce 值';
+            });
+            
+            // 不安全操作 - 这些会触发 CSP 违规报告
+            document.getElementById('inlineScript').addEventListener('click', function() {
+                try {
+                    eval('document.getElementById("unsafeResult").textContent = "如果你看到这条消息，说明内联脚本执行成功，CSP 未阻止它。"');
+                } catch (e) {
+                    document.getElementById('unsafeResult').textContent = '内联脚本被 CSP 阻止，已生成报告';
+                    document.getElementById('unsafeResult').className = 'result violation';
+                }
+            });
+            
+            document.getElementById('inlineStyle').addEventListener('click', function() {
+                try {
+                    const element = document.getElementById('unsafeResult');
+                    element.setAttribute('style', 'color: red !important; font-weight: bold;');
+                    element.textContent = '尝试应用内联样式 - 如果文本变红，说明 CSP 未阻止它';
+                } catch (e) {
+                    document.getElementById('unsafeResult').textContent = '内联样式被 CSP 阻止，已生成报告';
+                    document.getElementById('unsafeResult').className = 'result violation';
+                }
+            });
+            
+            document.getElementById('externalScript').addEventListener('click', function() {
+                try {
+                    const script = document.createElement('script');
+                    script.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
+                    document.head.appendChild(script);
+                    document.getElementById('unsafeResult').textContent = '尝试加载外部脚本 - 查看控制台是否有 CSP 违规';
+                    document.getElementById('unsafeResult').className = 'result violation';
+                } catch (e) {
+                    document.getElementById('unsafeResult').textContent = '加载外部脚本失败: ' + e.message;
+                }
+            });
+            
+            // 加载报告列表
+            document.getElementById('loadReports').addEventListener('click', function() {
+                fetch('/view-reports')
+                    .then(response => response.json())
+                    .then(reports => {
+                        const container = document.getElementById('reportsContainer');
+                        if (reports.length === 0) {
+                            container.innerHTML = '<p>暂无报告</p>';
+                            return;
+                        }
+                        
+                        let html = '<ul>';
+                        reports.forEach(report => {
+                            html += `<li>
+                                <strong>时间:</strong> ${report.timestamp}<br>
+                                <pre>${JSON.stringify(report.report, null, 2)}</pre>
+                            </li>`;
+                        });
+                        html += '</ul>';
+                        container.innerHTML = html;
+                    })
+                    .catch(error => {
+                        document.getElementById('reportsContainer').innerHTML = 
+                            `<p>加载报告失败: ${error.message}</p>`;
+                    });
+            });
+        });
+    </script>
+</body>
+</html> 

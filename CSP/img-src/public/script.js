@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // 创建新图片
       const newImg = document.createElement('img');
-      newImg.src = 'https://via.placeholder.com/300x150?text=动态添加的允许图片';
+      newImg.src = 'https://placehold.co/600x400';
       newImg.className = 'dynamically-added-img';
       
       newImg.addEventListener('load', function() {
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // 创建新图片
       const newImg = document.createElement('img');
-      newImg.src = 'https://picsum.photos/300/150';
+      newImg.src = 'https://picsum.photos/600/300';
       newImg.className = 'dynamically-added-img';
       
       newImg.addEventListener('load', function() {

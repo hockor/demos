@@ -5,10 +5,10 @@ const port = 3003;
 
 // 设置CSP头，img-src演示
 app.use((req, res, next) => {
-  // 允许从当前域和placeholder.com加载图片
+  // 允许从当前域和 placehold.co 加载图片
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; img-src 'self' https://via.placeholder.com"
+    "default-src 'self'; img-src 'self' https://placehold.co "
   );
   next();
 });

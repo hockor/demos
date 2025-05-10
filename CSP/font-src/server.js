@@ -10,7 +10,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
-    "font-src 'self' https://fonts.gstatic.com; default-src 'self'"
+    "font-src 'self' https://fonts.gstatic.com/css2; default-src 'self'"
   );
   next();
 });

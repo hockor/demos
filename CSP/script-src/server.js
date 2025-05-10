@@ -8,7 +8,7 @@ app.use((req, res, next) => {
   // 允许从当前域和code.jquery.com加载JavaScript
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' https://code.jquery.com"
+    "default-src 'self'; script-src 'self' "
   );
   next();
 });

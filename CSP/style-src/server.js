@@ -8,7 +8,7 @@ app.use((req, res, next) => {
   // 允许从当前域和cdnjs.cloudflare.com加载样式
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; style-src 'self' https://cdnjs.cloudflare.com"
+    "default-src 'self';style-src-elem 'self' https://cdnjs.cloudflare.com 'unsafe-inline';"
   );
   next();
 });

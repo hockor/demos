@@ -10,7 +10,7 @@
 <body>
   <div class="container">
     <h1>CSP img-src 指令演示</h1>
-    <p>本页面设置了: <code>default-src 'self'; img-src 'self' https://via.placeholder.com</code></p>
+    <p>本页面设置了: <code>default-src 'self'; img-src 'self' https://placehold.co</code></p>
     
     <div class="demo-section">
       <h2>图片加载测试</h2>
@@ -18,12 +18,11 @@
       <div class="test-case">
         <h3>1. 本地图片（应该成功）</h3>
         <img src="local-image.jpg" alt="本地图片" class="demo-img" id="local-img">
-        <div class="result" id="local-img-result">等待加载结果...</div>
       </div>
       
       <div class="test-case">
         <h3>2. 允许的外部图片（应该成功）</h3>
-        <img src="https://via.placeholder.com/300x150?text=允许的外部图片" alt="允许的外部图片" class="demo-img" id="allowed-external-img">
+        <img src="https://placehold.co/150x150" alt="允许的外部图片" class="demo-img" id="allowed-external-img">
         <div class="result" id="allowed-external-img-result">等待加载结果...</div>
       </div>
       
@@ -36,10 +35,7 @@
       <div class="test-case">
         <h3>4. CSS背景图片（应该成功/失败取决于来源）</h3>
         <div class="bg-image-local" id="local-bg-img">本地CSS背景图片（应该成功）</div>
-        <div class="result" id="local-bg-img-result">等待加载结果...</div>
-        
         <div class="bg-image-external" id="external-bg-img">外部CSS背景图片（应该失败）</div>
-        <div class="result" id="external-bg-img-result">等待加载结果...</div>
       </div>
       
       <div class="test-case">

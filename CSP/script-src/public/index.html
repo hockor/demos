@@ -5,10 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>script-src 演示</title>
   <link rel="stylesheet" href="style.css">
+  <script type="speculationrules">
+    {
+      "prefetch": [
+        {"urls": ["index2.html"]}
+      ]
+    }
+    </script>
   <!-- 这个脚本来自允许的来源 -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <!-- 本地脚本 -->
   <script src="script.js"></script>
+  <script>
+    eval("console.log('这个eval内联脚本应该被阻止')"); // 这行代码会被CSP阻止
+  </script>
 </head>
 <body>
   <div class="container">
